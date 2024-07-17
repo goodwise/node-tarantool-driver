@@ -51,6 +51,7 @@ Connection related custom events:
 | [options.username] | <code>string</code> | <code>null</code> | If set, client will authenticate with the value of this option when connected. |
 | [options.password] | <code>string</code> | <code>null</code> | If set, client will authenticate with the value of this option when connected. |
 | [options.timeout] | <code>number</code> | <code>0</code> | The milliseconds before a timeout occurs during the initial connection to the Tarantool server. |
+| [options.tls] | <code>Object</code> | <code>null</code> | If specified, forces to use `tls` module instead of the default `net`. In object properties you can specify any TLS-related options, e.g. from the [tls.createSecureContext()](https://nodejs.org/api/tls.html#tlscreatesecurecontextoptions) |
 | [options.keepAlive] | <code>boolean</code> | <code>true</code> | Enables keep-alive functionality (recommended). |
 | [options.noDelay] | <code>boolean</code> | <code>true</code> | Disables the use of Nagle's algorithm (recommended). |
 | [options.lazyConnect] | <code>boolean</code> | <code>false</code> | By default, When a new `Tarantool` instance is created, it will connect to Tarantool server automatically. If you want to keep disconnected util a command is called, you can pass the `lazyConnect` option to the constructor. |
@@ -193,9 +194,9 @@ conn.select(512, 0, 1, 0, 'eq', [50]);
 conn.select('test', 'primary', 1, 0, 'eq', [50]);
 ```
 
-You can use space name or index name instead of id, but it will some requests for get this metadata. That information actual for delete, replace, insert, update too.
+You can use space name or index name instead of id, but this way some requests will be made to get and cache metadata. This stored information will be actual for delete, replace, insert, update too.
 
-You can create space 'users' on Tarantool side, where the 'id' index is of UUID type:
+For tests, we will create a Space named 'users' on the Tarantool server-side, where the 'id' index is of UUID type:
 
 ```lua
 -- example schema of such space
@@ -288,7 +289,7 @@ conn.eval('return box.session.user()')
     })
 ```
 
-### tarantool.sql(query: String, bindParams: Array) -> <code>Promise</code>
+### tarantool.sql(query: String, bindParams: Array) ⇒ <code>Promise</code>
 
 It's accessible only in 2.1 tarantool.
 
@@ -316,6 +317,24 @@ P.S. If you using lowercase in your space name you need to use a double quote fo
 
 It doesn't work for space without format.
 
+### tarantool.pipeline().<...>.exec()
+
+Queue some commands in memory and then send them simultaneously to the server in a single (or several, if request body is too big) network call(s). 
+This way the performance is significantly improved by more than 300% (depending on the number of pipelined commands - the bigger, the better)
+
+Example:
+
+```Javascript
+tarantool.pipeline()
+.insert('tags', ['tag_1', 1])
+.insert('tags', ['tag_2', 50])
+.sql('update "tags" set "amount" = 10 where "tag_id" = \'tag_1\'')
+.update('tags', 'tag_id', ['tag_2'], [['=', 'amount', 30]])
+.sql('select * from "tags"')
+.call('truncateTags')
+.exec()
+```
+
 ### tarantool.ping() ⇒ <code>Promise</code>
 
 Promise resolve true.
@@ -338,7 +357,7 @@ It's ok you can do whatever you need. I add log options for some technical infor
 
 ## Changelog
 
-### 4.0.0
+### 3.1.0
 
 - Added 3 new msgpack extensions: UUID, Datetime, Decimal.
 - Connection object now accepts all options of `net.createConnection()`, including Unix socket path.
@@ -346,6 +365,11 @@ It's ok you can do whatever you need. I add log options for some technical infor
 - Ability to disable the offline queue.
 - Fixed [bug with int32](https://github.com/tarantool/node-tarantool-driver/issues/48) numbers when it was encoded as floating. Use method `packInteger()` to solve this.
 - `selectCb()` now also accepts `spaceId` and `indexId` as their String names, not only their IDs.
+- Some performance improvements by caching internal values.
+- TLS (SSL) support.
+- New `pipeline()`+`exec()` methods kindly borrowed from the [ioredis](https://github.com/redis/ioredis?tab=readme-ov-file#pipelining), which lets you to queue some commands in memory and then send them simultaneously to the server in a single (or several, if request body is too big) network call(s). Thanks to the Tarantool, which [made this possible](https://www.tarantool.io/en/doc/latest/dev_guide/internals/iproto/format/#packet-structure).
+This way the performance is significantly improved by 500-1600% - you can check it yourself by running `npm run benchmark-read` or `npm run benchmark-write`.
+Note that this feature doesn't replaces the Transaction model, which has some level of isolation.
 
 ### 3.0.7
 

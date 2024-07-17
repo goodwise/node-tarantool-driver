@@ -11,7 +11,6 @@ var conn = new Driver(process.argv[process.argv.length - 1], {lazyConnect: true}
 
 conn.connect()
 	.then(function(){
-
 		suite.add('select cb', {defer: true, fn: function(defer){
 			function callback(){
 				defer.resolve();
@@ -91,6 +90,31 @@ conn.connect()
 				console.error(e, e.stack);
 			}
 		}});
+
+		suite.add('pipelined select by 10', {defer: true, fn: function(defer){
+			var pipelinedConn = conn.pipeline()
+			
+			for (var i=0;i<10;i++) {
+				pipelinedConn.select('counter', 0, 1, 0, 'eq', ['test']);
+			}
+
+			pipelinedConn.exec()
+			.then(function(){ defer.resolve(); })
+			.catch(function(e){ defer.reject(e); });
+		}});
+
+		suite.add('pipelined select by 50', {defer: true, fn: function(defer){
+			var pipelinedConn = conn.pipeline()
+			
+			for (var i=0;i<50;i++) {
+				pipelinedConn.select('counter', 0, 1, 0, 'eq', ['test']);
+			}
+
+			pipelinedConn.exec()
+			.then(function(){ defer.resolve(); })
+			.catch(function(e){ defer.reject(e); });
+		}});
+
 		suite
 			.on('cycle', function(event) {
 				console.log(String(event.target));

@@ -35,6 +35,31 @@ conn.connect()
 					console.error(e, e.stack);
 				}
 		}});
+
+		suite.add('pipelined insert by 10', {defer: true, fn: function(defer){
+			var pipelinedConn = conn.pipeline()
+
+			for (var i=0;i<10;i++) {
+				pipelinedConn.insert('bench', [c++, {user: 'username', data: 'Some data.'}])
+			}
+
+			pipelinedConn.exec()
+			.then(function(){ defer.resolve(); })
+			.catch(function(e){ defer.reject(e); })
+		}});
+
+		suite.add('pipelined insert by 50', {defer: true, fn: function(defer){
+			var pipelinedConn = conn.pipeline()
+
+			for (var i=0;i<50;i++) {
+				pipelinedConn.insert('bench', [c++, {user: 'username', data: 'Some data.'}])
+			}
+
+			pipelinedConn.exec()
+			.then(function(){ defer.resolve(); })
+			.catch(function(e){ defer.reject(e); })
+		}});
+
 		suite
 			.on('cycle', function(event) {
 				console.log(String(event.target));

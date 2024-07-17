@@ -1,5 +1,9 @@
 box.cfg{listen=3301}
 
+if not box.schema.user.exists('test') then
+  box.schema.user.create('test')
+end
+
 user = box.user
 if not user then
   box.schema.user.grant('test', 'execute', 'universe')
