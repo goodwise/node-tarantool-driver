@@ -370,6 +370,7 @@ It's ok you can do whatever you need. I add log options for some technical infor
 - New `pipeline()`+`exec()` methods kindly borrowed from the [ioredis](https://github.com/redis/ioredis?tab=readme-ov-file#pipelining), which lets you to queue some commands in memory and then send them simultaneously to the server in a single (or several, if request body is too big) network call(s). Thanks to the Tarantool, which [made this possible](https://www.tarantool.io/en/doc/latest/dev_guide/internals/iproto/format/#packet-structure).
 This way the performance is significantly improved by 500-1600% - you can check it yourself by running `npm run benchmark-read` or `npm run benchmark-write`.
 Note that this feature doesn't replaces the Transaction model, which has some level of isolation.
+- Changed `const` declaration to `var` in order to support old Node.JS versions.
 
 ### 3.0.7
 
