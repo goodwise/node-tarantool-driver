@@ -1,4 +1,7 @@
-box.cfg{listen=3301}
+box.cfg{
+  listen=3301, 
+  memtx_use_mvcc_engine=true
+}
 
 if not box.schema.user.exists('test') then
   box.schema.user.create('test')
@@ -16,14 +19,19 @@ end)
 c = box.space.counter
 if not c then
     c = box.schema.space.create('counter')
-    pr = c:create_index('primary', {type = 'TREE', unique = true, parts = {1, 'STR'}})
+    c:format({
+      {name = 'primary', type = 'string'},
+      {name = 'num', type = 'unsigned'},
+      {name = 'text', type = 'string'}
+    })
+    pr = c:create_index('primary', {type = 'TREE', unique = true, parts = {1, 'string'}})
     c:insert({'test', 1337, 'Some text.'})
 end
 
 s = box.space.bench
 if not s then
     s = box.schema.space.create('bench')
-    p = s:create_index('primary', {type = 'hash', parts = {1, 'num'}})
+    p = s:create_index('primary', {type = 'hash', parts = {1, 'unsigned'}})
 end
 
 function clear()

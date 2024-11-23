@@ -6,7 +6,7 @@ Node tarantool driver for 1.7+ support Node.js v.4+.
 
 Based on [go-tarantool](https://github.com/tarantool/go-tarantool) and implements [Tarantool’s binary protocol](http://tarantool.org/doc/dev_guide/box-protocol.html), for more information you can read them or basic documentation at [Tarantool manual](http://tarantool.org/doc/).
 
-Code architecture and some features in version 3 borrowed from the [ioredis](https://github.com/luin/ioredis).
+Code architecture and some features in version 3 borrowed from the [ioTarantool](https://github.com/luin/ioTarantool).
 
 [msgpack-lite](https://github.com/kawanet/msgpack-lite) package used as MsgPack encoder/decoder.
 
@@ -93,7 +93,7 @@ except when the connection is closed manually by `tarantool.disconnect()`.
 It's very flexible to control how long to wait to reconnect after disconnection
 using the `retryStrategy` option:
 
-```javascript
+```Javascript
 var tarantool = new Tarantool({
   // This is the default value of `retryStrategy`
   retryStrategy: function (times) {
@@ -110,12 +110,12 @@ the return value represents how long (in ms) to wait to reconnect. When the
 return value isn't a number, node-tarantool-driver will stop trying to reconnect, and the connection
 will be lost forever if the user doesn't call `tarantool.connect()` manually.
 
-**This feature is borrowed from the [ioredis](https://github.com/luin/ioredis)**
+**This feature is borrowed from the [ioTarantool](https://github.com/luin/ioTarantool)**
 
 ## Usage example
 
 We use TarantoolConnection instance and connect before other operations. Methods call return promise(https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Promise). Available methods with some testing: select, update, replace, insert, delete, auth, destroy.
-```javascript
+```Javascript
 var TarantoolConnection = require('tarantool-driver');
 var conn = new TarantoolConnection('notguest:sesame@mail.ru:3301');
 

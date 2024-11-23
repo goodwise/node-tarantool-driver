@@ -1,5 +1,10 @@
 #!/usr/bin/env tarantool
-box.cfg{listen=33013}
+box.cfg{
+    listen = {
+        33013,
+        '/tmp/tarantool-test.sock' -- most of the UNIX-like systems (including MacOS) have the '/tmp' folder
+    }
+}
 
 lp = {
    test = 'test',

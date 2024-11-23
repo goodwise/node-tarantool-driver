@@ -7,13 +7,10 @@
 var exec = require('child_process').exec;
 var expect = require('chai').expect;
 var sinon = require('sinon');
-var spy = sinon.spy.bind(sinon);
 var stub = sinon.stub.bind(sinon);
 
-var fs = require('fs');
 var assert = require('assert');
 var TarantoolConnection = require('../lib/connection');
-var SliderBuffer = require('../lib/sliderBuffer');
 var mlite = require('msgpack-lite');
 var conn;
 
@@ -22,23 +19,23 @@ describe('constructor', function () {
 		stub(TarantoolConnection.prototype, 'connect').returns(Promise.resolve());
 		var option;
 		try {
-			option = getOption(6380);
-			expect(option).to.have.property('port', 6380);
+			option = getOption(33013);
+			expect(option).to.have.property('port', 33013);
 			expect(option).to.have.property('host', 'localhost');
 
-			option = getOption('6380');
-			expect(option).to.have.property('port', 6380);
+			option = getOption('33013');
+			expect(option).to.have.property('port', 33013);
 
-			option = getOption(6381, '192.168.1.1');
-			expect(option).to.have.property('port', 6381);
-			expect(option).to.have.property('host', '192.168.1.1');
+			option = getOption(33013, '192.168.0.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 
-			option = getOption(6381, '192.168.1.1', {
+			option = getOption(33013, '192.168.0.1', {
 				password: '123',
 				username: 'userloser'
 			});
-			expect(option).to.have.property('port', 6381);
-			expect(option).to.have.property('host', '192.168.1.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 			expect(option).to.have.property('password', '123');
 			expect(option).to.have.property('username', 'userloser');
 
@@ -46,41 +43,41 @@ describe('constructor', function () {
 			expect(option).to.have.property('port', 33013);
 			expect(option).to.have.property('host', 'mail.ru');
 
-			option = getOption('notguest:sesame@mail.ru:3301');
+			option = getOption('notguest:sesame@mail.ru:33013');
 			expect(option).to.have.property('port', 3301);
 			expect(option).to.have.property('host', 'mail.ru');
 			expect(option).to.have.property('username', 'notguest');
 			expect(option).to.have.property('password', 'sesame');
 
-			option = getOption('/var/run/tarantool/unix.sock');
-			expect(option).to.have.property('path', '/var/run/tarantool/unix.sock');
+			option = getOption('/tmp/tarantool-test.sock');
+			expect(option).to.have.property('path', '/tmp/tarantool-test.sock');
 
 			option = getOption({
-				port: 6380,
-				host: '192.168.1.1'
+				port: 33013,
+				host: '192.168.0.1'
 			});
-			expect(option).to.have.property('port', 6380);
-			expect(option).to.have.property('host', '192.168.1.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 
 			option = getOption({
-				port: 6380,
-				host: '192.168.1.1',
-				reserveHosts: ['notguest:sesame@mail.ru:3301', 'mail.ru:3301']
+				port: 33013,
+				host: '192.168.0.1',
+				reserveHosts: ['notguest:sesame@mail.ru:33013', 'mail.ru:33013']
 			});
-			expect(option).to.have.property('port', 6380);
-			expect(option).to.have.property('host', '192.168.1.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 			expect(option).to.have.property('reserveHosts');
-			expect(option.reserveHosts).to.deep.equal(['notguest:sesame@mail.ru:3301', 'mail.ru:3301']);
+			expect(option.reserveHosts).to.deep.equal(['notguest:sesame@mail.ru:33013', 'mail.ru:33013']);
 			
 			option = new TarantoolConnection({
-				port: 6380,
-				host: '192.168.1.1',
-				reserveHosts: ['notguest:sesame@mail.ru:3301', 'mail.ru:3301']
+				port: 33013,
+				host: '192.168.0.1',
+				reserveHosts: ['notguest:sesame@mail.ru:33013', 'mail.ru:33013']
 			});
 			expect(option.reserve).to.deep.include(
 				{
-					port:	6380,
-					host: '192.168.1.1',
+					port:	33013,
+					host: '192.168.0.1',
 					path: null,
 					username: null,
 					password: null
@@ -98,27 +95,27 @@ describe('constructor', function () {
 			);
 
 			option = getOption({
-				port: 6380,
-				host: '192.168.1.1'
+				port: 33013,
+				host: '192.168.0.1'
 			});
-			expect(option).to.have.property('port', 6380);
-			expect(option).to.have.property('host', '192.168.1.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 
 			option = getOption({
-				port: '6380'
+				port: '33013'
 			});
-			expect(option).to.have.property('port', 6380);
+			expect(option).to.have.property('port', 33013);
 
-			option = getOption(6380, {
-				host: '192.168.1.1'
+			option = getOption(33013, {
+				host: '192.168.0.1'
 			});
-			expect(option).to.have.property('port', 6380);
-			expect(option).to.have.property('host', '192.168.1.1');
+			expect(option).to.have.property('port', 33013);
+			expect(option).to.have.property('host', '192.168.0.1');
 
-			option = getOption('6380', {
-				host: '192.168.1.1'
+			option = getOption('33013', {
+				host: '192.168.0.1'
 			});
-			expect(option).to.have.property('port', 6380);
+			expect(option).to.have.property('port', 33013);
 		} catch (err) {
 			TarantoolConnection.prototype.connect.restore();
 			throw err;
@@ -413,7 +410,6 @@ describe('timeout', function(){
 describe('requests', function(){
 	var insertTuple = [50, 10, 'my key', 30];
 	before(function(done){
-		console.log('before call');
 		try{
 			conn = new TarantoolConnection({port: 33013, username: 'test', password: 'test'});
 			
