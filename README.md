@@ -357,6 +357,19 @@ It's ok you can do whatever you need. I add log options for some technical infor
 
 ## Changelog
 
+### 3.2.0
+
+- Now supports [prepared](https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_sql/prepare/#box-sql-box-prepare) SQL statements.
+- Huge rewrite of the codebase, which improved performance by N%:
+    - Now using 'msgpackr' instead of 'msgpack-lite'
+    - Buffer reuse
+    - Decreased memory consumption
+- New AutoPipelining mode: send a batch of commands periodically with no need to rewrite your existing code. Benchmark showed x3 performance for the Select requests: 
+    - 330k/sec without AutoPipelining
+    - 1100k/sec with AutoPipelining period set to ~10ms
+- [IPROTO_ID](https://www.tarantool.io/en/doc/latest/reference/internals/iproto/requests/#iproto-id) can be invoked as 'conn.id()' function.
+- [Streams](https://www.tarantool.io/en/doc/latest/platform/atomic/txn_mode_mvcc/#streams-and-interactive-transactions) support.
+
 ### 3.1.0
 
 - Added 3 new msgpack extensions: UUID, Datetime, Decimal.
@@ -420,7 +433,5 @@ Key is now can be just a number.
 
 ## ToDo
 
-1. Streams
-2. Events and subscriptions
-3. Graceful shutdown protocol
-4. Prepared SQL statements
+1. Events and subscriptions
+2. Graceful shutdown protocol

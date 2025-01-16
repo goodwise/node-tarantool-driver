@@ -1,6 +1,6 @@
 {
   "name": "tarantool-driver",
-  "version": "4.0.0",
+  "version": "3.2.0",
   "description": "Tarantool driver for 1.7+",
   "main": "index.js",
   "scripts": {
@@ -39,7 +39,6 @@
     "debug": "^2.6.8",
     "int64-buffer": "^1.0.1",
     "lodash": "^4.17.4",
-    "msgpack-lite": "^0.1.20",
     "uuid": "^9.0.0",
     "msgpackr": "^1.11.2"
   },

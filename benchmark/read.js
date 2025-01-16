@@ -12,7 +12,7 @@ var connectionArg = process.argv[process.argv.length - 1]
 
 var conn = new Driver(connectionArg, {
 	lazyConnect: true,
-	tuplesToObjects: true
+	tuplesToObjects: false
 });
 
 var connAutoPipelined = new Driver(connectionArg, {
@@ -28,10 +28,10 @@ Promise.all([
 .then(function () {
 	return Promise.all([
 		conn.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, noop),
-		connAutoPipelined.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, noop),
+		// connAutoPipelined.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, noop),
 		conn.prepare('SELECT * FROM "counter" WHERE "primary" = ? LIMIT 1 OFFSET 0')
 		.then(function (result) {
-			preparedSelectStmtId = result.id
+			preparedSelectStmtId = result;
 		})
 	])
 })
