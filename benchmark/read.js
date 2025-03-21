@@ -1,4 +1,3 @@
-/* global Promise */
 'use strict';
 
 var Benchmark = require('benchmark');
@@ -6,7 +5,7 @@ var suite = new Benchmark.Suite();
 var Driver = require('../lib/connection.js');
 var noop = require('lodash/noop');
 var promises;
-var preparedSelectStmtId;
+var preparedSelectStmtId = 0;
 
 var connectionArg = process.argv[process.argv.length - 1]
 
@@ -15,20 +14,12 @@ var conn = new Driver(connectionArg, {
 	tuplesToObjects: false
 });
 
-var connAutoPipelined = new Driver(connectionArg, {
-	lazyConnect: true,
-	autoPipeliningPeriod: 10 // just a 1 millisecond window!
-});
-
-Promise.all([
-	conn.connect(),
-	connAutoPipelined.connect()
-])
-// preload schema and create a prepared SQL statement
+conn.connect()
 .then(function () {
 	return Promise.all([
+		// preload schemas
 		conn.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, noop),
-		// connAutoPipelined.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, noop),
+		// create a prepared SQL statement
 		conn.prepare('SELECT * FROM "counter" WHERE "primary" = ? LIMIT 1 OFFSET 0')
 		.then(function (result) {
 			preparedSelectStmtId = result;
@@ -48,9 +39,29 @@ Promise.all([
 	}});
 
 	// show the performance improvement when using an autopipelining
-	suite.add('non-deferred select + autopipelining window of 1ms', {defer: false, fn: function(){
-		connAutoPipelined.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, console.error);
-	}});
+	suite.add("non-deferred select + autopipelining", {
+		defer: false,
+		onStart: () => {
+			// enable the autopipelining feature
+			conn.enableAutoPipelining = true;
+		},
+		onComplete: () => {
+			// disable the autopipelining feature
+			conn.enableAutoPipelining = false;
+		},
+		fn: function () {
+		conn.selectCb(
+			"counter",
+			0,
+			1,
+			0,
+			"eq",
+			["test"],
+			noop,
+			console.error
+		);
+		},
+	});
 
 	suite.add('non-deferred sql select', {defer: false, fn: function(){
 		conn.sql('SELECT * FROM "counter" WHERE "primary" = ? LIMIT 1 OFFSET 0', ['test']);
