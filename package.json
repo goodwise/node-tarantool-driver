@@ -1,6 +1,6 @@
 {
   "name": "tarantool-driver",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Tarantool driver for 1.7+",
   "main": "index.js",
   "scripts": {
@@ -47,7 +47,6 @@
     "chai": "^4.1.0",
     "coveralls": "^2.13.3",
     "eslint": "^2.5.3",
-    "ioredis": "^3.1.2",
     "istanbul": "^0.4.5",
     "mocha": "^2.2.4",
     "nanotimer": "^0.3.14",

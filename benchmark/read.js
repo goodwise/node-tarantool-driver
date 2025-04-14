@@ -11,7 +11,7 @@ var connectionArg = process.argv[process.argv.length - 1]
 
 var conn = new Driver(connectionArg, {
 	lazyConnect: true,
-	tuplesToObjects: false
+	tupleToObject: false
 });
 
 conn.connect()
@@ -32,9 +32,9 @@ conn.connect()
 		conn.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, console.error);
 	}});
 
-	suite.add('non-deferred select, tuplesToObjects', {defer: false, fn: function(){
+	suite.add('non-deferred select, tupleToObject', {defer: false, fn: function(){
 		conn.selectCb('counter', 0, 1, 0, 'eq', ['test'], noop, console.error, {
-			tuplesToObjects: true
+			tupleToObject: true
 		});
 	}});
 
@@ -62,6 +62,12 @@ conn.connect()
 		);
 		},
 	});
+
+	suite.add('non-deferred select from vinyl', {defer: false, fn: function(){
+		conn.selectCb('counter_vinyl', 0, 1, 0, 'eq', ['test'], noop, console.error, {
+			tupleToObject: true
+		});
+	}});
 
 	suite.add('non-deferred sql select', {defer: false, fn: function(){
 		conn.sql('SELECT * FROM "counter" WHERE "primary" = ? LIMIT 1 OFFSET 0', ['test']);

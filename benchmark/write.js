@@ -16,6 +16,22 @@ conn.connect()
 					defer.reject(e);
 				});
 		}});
+
+		suite.add('non-deferred insert', {defer: false, fn: function(){
+			conn.insert('bench', [c++, {user: 'username', data: 'Some data.'}])
+				.catch(function(e){
+					console.error(e);
+				});
+		}});
+
+		suite.add('insert to vinyl', {defer: true, fn: function(defer){
+			conn.insert('bench_vinyl', [c++, {user: 'username', data: 'Some data.'}])
+				.then(function(){defer.resolve();})
+				.catch(function(e){
+					console.error(e, e.stack);
+					defer.reject(e);
+				});
+		}});
 		
 		suite.add('insert parallel 50', {defer: true, fn: function(defer){
 			try{
