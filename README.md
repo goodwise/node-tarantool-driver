@@ -55,7 +55,7 @@ Connection related custom events:
 | [options.keepAlive] | <code>boolean</code> | <code>true</code> | Enables keep-alive functionality (recommended). |
 | [options.noDelay] | <code>boolean</code> | <code>true</code> | Disables the use of Nagle's algorithm (recommended). |
 | [options.lazyConnect] | <code>boolean</code> | <code>false</code> | By default, When a new `Tarantool` instance is created, it will connect to Tarantool server automatically. If you want to keep disconnected util a command is called, you can pass the `lazyConnect` option to the constructor. |
-| [options.nonWritableHostPolicy] | <code>string</code> | <code>null</code> | What to do when Tarantool server rejects write operation, e.g. because of `box.cfg.read_only` set to `true` or during snapshot fetching. <br /> Possible values are: <br /> - `null`: just rejects Promise with an error <br /> - `changeHost`: disconnect from the current host and connect to the next from `reserveHosts`. Pending Promise will be rejected. <br /> - `changeAndRetry`: same as `changeHost`, but after reconnecting tries to run the command again in order to fullfil the Promise |
+| [options.nonWritableHostPolicy] | <code>string</code> | <code>null</code> | What to do when Tarantool server rejects write operation, e.g. because of `box.cfg.read_only` set to `true` or during snapshot fetching. <br /> Possible values are: <br /> - `0`: just rejects Promise with an error <br /> - `1`: disconnect from the current host and connect to the next from `reserveHosts`. Pending Promise will be rejected. <br /> - `2`: same as `1`, but after reconnecting tries to run the command again in order to fullfil the Promise |
 | [options.enableAutoPipelining] | <code>boolean</code> | <code>false</code> | In auto pipelining mode, all commands issued during an event loop are enqueued in a pipeline automatically managed by tarantool-driver. At the end of the iteration, the pipeline is executed and thus all commands are sent to the server at the same time. |
 | [options.maxRetriesPerRequest] | <code>number</code> | <code>5</code> | Number of attempts to find the alive host if `nonWritableHostPolicy` is not null. |
 | [options.enableOfflineQueue] | <code>boolean</code> | <code>true</code> | By default, if there is no active connection to the Tarantool server, commands are added to a queue and are executed once the connection is "ready", meaning the connection to the Tarantool server has been established and auth passed (`connect` event is also executed at this moment). If this option is false, when execute the command when the connection isn't ready, an error will be returned. |
@@ -358,6 +358,14 @@ It's ok you can do whatever you need. I add log options for some technical infor
 
 ## Changelog
 
+### 4.0.0
+
+- `nonWritableHostPolicy` option changed it's type from `string` to `number`
+- `nonWritableHostPolicy` moved to a development state, consider not using it in production
+- Reworked offline queue
+- Fixed bug with buffer reuse
+- Fixed use of Transactions if connection is not inited yet
+
 ### 3.2.0
 
 - Now supports [prepared](https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_sql/prepare/#box-sql-box-prepare) SQL statements.
@@ -365,9 +373,9 @@ It's ok you can do whatever you need. I add log options for some technical infor
     - Now using 'msgpackr' instead of 'msgpack-lite'
     - Buffer reuse
     - Decreased memory consumption
-- New AutoPipelining mode: send a batch of commands periodically with no need to rewrite your existing code. Benchmark showed x3 performance for the Select requests: 
-    - 330k/sec without AutoPipelining
-    - 1100k/sec with AutoPipelining feature enabled
+- New AutoPipelining mode: optimise performance with no need to rewrite your existing code. Benchmark showed x4 performance for the `select` requests: 
+    - 350k/sec without AutoPipelining
+    - 1400k/sec with AutoPipelining feature enabled
 - [IPROTO_ID](https://www.tarantool.io/en/doc/latest/reference/internals/iproto/requests/#iproto-id) can be invoked as 'conn.id()' function.
 - [Streams](https://www.tarantool.io/en/doc/latest/platform/atomic/txn_mode_mvcc/#streams-and-interactive-transactions) support.
 
